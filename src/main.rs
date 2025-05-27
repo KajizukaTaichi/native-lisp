@@ -27,7 +27,7 @@ impl Compiler {
         let top = "section .text\n\tglobal _start\n\n_start:\n";
         let exit = "\tmov rdi, rax\n\tmov rax, 0x2000001\n\tsyscall\n";
         let vars = compiler.variables.into_iter().collect::<String>();
-        Some(format!("{top}{code}\n{exit}\n{vars}"))
+        Some(format!("{top}{code}\n{exit}\nsection .data\n{vars}"))
     }
 }
 
@@ -75,12 +75,12 @@ impl Expr {
                         "*" => multi_args!("imul"),
                         "/" => multi_args!("idiv"),
                         "var" => {
-                            let Expr::Atom(Atom::Symbol(name)) = expr.get(2)? else {
+                            let Expr::Atom(Atom::Symbol(name)) = expr.get(1)? else {
                                 return None;
                             };
                             let value = expr.get(2)?.compile(ctx)?;
-                            ctx.variables.insert(format!("{name} dq 0"));
-                            Some(format!("{value}mov [{name}], rax"))
+                            ctx.variables.insert(format!("\t{name} dq 0\n"));
+                            Some(format!("{value}\tmov [rel {name}], rax\n"))
                         }
                         _ => None,
                     }
@@ -110,7 +110,7 @@ impl Atom {
     fn compile(&self, _ctx: &mut Compiler) -> Option<String> {
         match self {
             Atom::Integer(number) => Some(format!("\tmov rax, {number}\n")),
-            Atom::Symbol(name) => Some(format!("\tmov rax, [{name}]\n")),
+            Atom::Symbol(name) => Some(format!("\tmov rax, [rel {name}]\n")),
         }
     }
 }
