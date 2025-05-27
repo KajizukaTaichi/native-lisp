@@ -11,6 +11,7 @@ fn main() {
 }
 
 struct Compiler {
+    lambda_id: usize,
     variables: HashSet<String>,
 }
 
@@ -21,6 +22,7 @@ impl Compiler {
             .map(|code| Expr::parse(code))
             .collect::<Option<Vec<_>>>()?;
         let mut compiler = Compiler {
+            lambda_id: 0,
             variables: HashSet::new(),
         };
         let code = expr
