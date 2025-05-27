@@ -32,6 +32,25 @@ impl Expr {
                             ctx.variables.insert(format!("\t{name} dq 0\n"));
                             Some(format!("{value}\tmov [rel {name}], rax\n"))
                         }
+                        "lambda" => {
+                            let Expr::List(list) = expr.get(1)? else {
+                                return None;
+                            };
+                            let mut args = vec![];
+                            for arg in list {
+                                let Expr::Atom(Atom::Symbol(name)) = arg else {
+                                    return None;
+                                };
+                                args.push(name);
+                            }
+                            Some(
+                                args.iter()
+                                    .map(|name| format!("\tpop rax\n\tmov [rel {name}], rax\n"))
+                                    .collect::<Vec<_>>()
+                                    .concat()
+                                    + &expr.get(2)?.compile(ctx)?,
+                            )
+                        }
                         _ => None,
                     }
                 }
