@@ -1,4 +1,4 @@
-mod codegen;
+mod r#gen;
 mod lexer;
 mod parse;
 use lexer::tokenize;
