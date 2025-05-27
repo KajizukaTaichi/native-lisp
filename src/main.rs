@@ -1,5 +1,5 @@
 fn main() {
-    let code = "(+ 1 2 (* 3 3))";
+    let code = include_str!("../example.lisp");
     let output = Compiler::build(code);
     println!("{}", output.unwrap());
 }
