@@ -41,6 +41,7 @@ impl Expr {
                                 let Expr::Atom(Atom::Symbol(name)) = arg else {
                                     return None;
                                 };
+                                ctx.variables.insert(format!("\t{name} dq 0\n"));
                                 args.push(name);
                             }
                             let name = format!("lambda_{}", ctx.functions.len());
