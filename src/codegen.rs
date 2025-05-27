@@ -43,13 +43,16 @@ impl Expr {
                                 };
                                 args.push(name);
                             }
-                            Some(
-                                args.iter()
-                                    .map(|name| format!("\tpop rax\n\tmov [rel {name}], rax\n"))
-                                    .collect::<Vec<_>>()
-                                    .concat()
-                                    + &expr.get(2)?.compile(ctx)?,
-                            )
+                            let name = format!("lambda_{}", ctx.functions.len());
+                            let receiver = args
+                                .iter()
+                                .map(|name| format!("\tpop rax\n\tmov [rel {name}], rax\n"))
+                                .collect::<Vec<_>>()
+                                .concat();
+                            let body = &expr.get(2)?.compile(ctx)?;
+                            ctx.functions
+                                .push(format!("{name}:\n{receiver}\n{body}\tret\n\n"));
+                            Some(format!("\tmov rax, {name}\n"))
                         }
                         _ => None,
                     }
