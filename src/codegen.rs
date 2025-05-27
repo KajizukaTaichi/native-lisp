@@ -31,7 +31,7 @@ impl Expr {
                                 Some(result)
                             }};
                         }
-                        match func_name.as_str() {
+                        match func_name.replacen("lisp_", "", 1).as_str() {
                             "+" => multi_args!("add"),
                             "-" => multi_args!("sub"),
                             "*" => multi_args!("imul"),
@@ -68,7 +68,10 @@ impl Expr {
                                     .push(format!("{name}:\n{receiver}\n{body}\tret\n\n"));
                                 Some(format!("\tlea rax, [rel {name}]\n"))
                             }
-                            _ => Some(format!("{}call {func_name}\n", pass_args!())),
+                            _ => Some(format!(
+                                "{}\tmov rax, [rel {func_name}]\n\tcall rax\n",
+                                pass_args!()
+                            )),
                         }
                     }
                     func_obj => {
