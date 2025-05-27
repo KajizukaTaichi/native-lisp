@@ -1,4 +1,5 @@
-(var compose (lambda (f g) (lambda (x) (f (g x)))))
+(var compose
+    (lambda (f g) (lambda (x) (f (g x)))))
 (var inc (lambda (x) (+ x 1)))
 (var dup (lambda (x) (* x 2)))
 (var incdup (compose inc dup))
