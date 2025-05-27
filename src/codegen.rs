@@ -56,7 +56,8 @@ impl Expr {
                                     ctx.variables.insert(format!("\t{name} dq 0\n"));
                                     args.push(name);
                                 }
-                                let name = format!("lambda_{}", ctx.functions.len());
+                                let name = format!("lambda_{}", ctx.lambda_id);
+                                ctx.lambda_id += 1;
                                 let receiver = args
                                     .iter()
                                     .enumerate()
