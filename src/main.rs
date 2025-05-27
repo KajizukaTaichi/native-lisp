@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 fn main() {
     let code = include_str!("../example.lisp");
     let output = Compiler::build(code);
@@ -5,7 +7,7 @@ fn main() {
 }
 
 struct Compiler {
-    variables: Vec<String>,
+    variables: HashSet<String>,
 }
 
 impl Compiler {
@@ -15,7 +17,7 @@ impl Compiler {
             .map(|code| Expr::parse(code))
             .collect::<Option<Vec<_>>>()?;
         let mut compiler = Compiler {
-            variables: Vec::new(),
+            variables: HashSet::new(),
         };
         let code = expr
             .iter()
@@ -24,7 +26,8 @@ impl Compiler {
             .concat();
         let top = "section .text\n\tglobal _start\n\n_start:\n";
         let exit = "\tmov rdi, rax\n\tmov rax, 0x2000001\n\tsyscall\n";
-        Some(format!("{top}{code}\n{exit}"))
+        let vars = compiler.variables.into_iter().collect::<String>();
+        Some(format!("{top}{code}\n{exit}\n{vars}"))
     }
 }
 
@@ -71,6 +74,14 @@ impl Expr {
                         "-" => multi_args!("sub"),
                         "*" => multi_args!("imul"),
                         "/" => multi_args!("idiv"),
+                        "var" => {
+                            let Expr::Atom(Atom::Symbol(name)) = expr.get(2)? else {
+                                return None;
+                            };
+                            let value = expr.get(2)?.compile(ctx)?;
+                            ctx.variables.insert(format!("{name} dq 0"));
+                            Some(format!("{value}mov [{name}], rax"))
+                        }
                         _ => None,
                     }
                 }
