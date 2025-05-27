@@ -58,7 +58,16 @@ impl Expr {
                         _ => None,
                     }
                 }
-                _ => None,
+                func_obj => {
+                    let code = func_obj.compile(ctx)?;
+                    let mut args = String::new();
+                    for arg in expr.iter().skip(2) {
+                        let code = arg.compile(ctx)?;
+                        let code = &format!("{code}\tpush rax");
+                        args.push_str(code);
+                    }
+                    Some(format!("{args}{code}\tcall rax\n"))
+                }
             },
             Expr::Atom(atom) => atom.compile(ctx),
         }
