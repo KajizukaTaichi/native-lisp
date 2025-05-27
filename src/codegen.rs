@@ -47,13 +47,14 @@ impl Expr {
                             let name = format!("lambda_{}", ctx.functions.len());
                             let receiver = args
                                 .iter()
-                                .map(|name| format!("\tpop rax\n\tmov [rel {name}], rax\n"))
+                                .enumerate()
+                                .map(|(id, name)| format!("\tmov [rel {name}], r{}\n", id + 8))
                                 .collect::<Vec<_>>()
                                 .concat();
                             let body = &expr.get(2)?.compile(ctx)?;
                             ctx.functions
                                 .push(format!("{name}:\n{receiver}\n{body}\tret\n\n"));
-                            Some(format!("\tmov rax, {name}\n"))
+                            Some(format!("\tlea rax, [rel {name}]\n"))
                         }
                         _ => None,
                     }
@@ -61,9 +62,9 @@ impl Expr {
                 func_obj => {
                     let code = func_obj.compile(ctx)?;
                     let mut args = String::new();
-                    for arg in expr.iter().skip(2) {
+                    for (id, arg) in expr.iter().skip(1).enumerate() {
                         let code = arg.compile(ctx)?;
-                        let code = &format!("{code}\tpush rax");
+                        let code = &format!("{code}\tmov r{}, rax\n", id + 8);
                         args.push_str(code);
                     }
                     Some(format!("{args}{code}\tcall rax\n"))
