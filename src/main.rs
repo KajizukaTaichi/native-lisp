@@ -10,11 +10,18 @@ struct Compiler {
 
 impl Compiler {
     fn build(code: &str) -> Option<String> {
-        let expr = Expr::parse(code)?;
+        let expr = tokenize(code)?
+            .iter()
+            .map(|code| Expr::parse(code))
+            .collect::<Option<Vec<_>>>()?;
         let mut compiler = Compiler {
             variables: Vec::new(),
         };
-        let code = expr.compile(&mut compiler)?;
+        let code = expr
+            .iter()
+            .map(|x| x.compile(&mut compiler))
+            .collect::<Option<Vec<_>>>()?
+            .concat();
         let top = "section .text\n\tglobal _start\n\n_start:\n";
         let exit = "\tmov rdi, rax\n\tmov rax, 0x2000001\n\tsyscall\n";
         Some(format!("{top}{code}\n{exit}"))
@@ -89,7 +96,7 @@ impl Atom {
         }
     }
 
-    fn compile(&self, ctx: &mut Compiler) -> Option<String> {
+    fn compile(&self, _ctx: &mut Compiler) -> Option<String> {
         match self {
             Atom::Integer(number) => Some(format!("\tmov rax, {number}\n")),
             Atom::Symbol(name) => Some(format!("\tmov rax, [{name}]\n")),
