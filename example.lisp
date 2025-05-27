@@ -1,1 +1,2 @@
-((lambda (x) (+ x 1)) 2)
+(var add (lambda (a b) (+ a b)))
+(add 3 4)
