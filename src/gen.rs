@@ -31,7 +31,7 @@ impl Expr {
                                 Some(result)
                             }};
                         }
-                        match func_name.replacen("lisp_", "", 1).as_str() {
+                        match func_name.strip_prefix("_")? {
                             "+" => multi_args!("add"),
                             "-" => multi_args!("sub"),
                             "*" => multi_args!("imul"),
