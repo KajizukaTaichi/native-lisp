@@ -2,7 +2,7 @@ mod r#gen;
 mod lexer;
 mod parse;
 use lexer::tokenize;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 fn main() {
     let code = include_str!("../example.lisp");
@@ -13,7 +13,7 @@ fn main() {
 struct Compiler {
     lambda_id: usize,
     functions: Vec<String>,
-    variables: HashSet<String>,
+    variables: BTreeSet<String>,
 }
 
 impl Compiler {
@@ -25,7 +25,7 @@ impl Compiler {
         let mut compiler = Compiler {
             lambda_id: 0,
             functions: Vec::new(),
-            variables: HashSet::new(),
+            variables: BTreeSet::new(),
         };
         let code = expr
             .iter()
