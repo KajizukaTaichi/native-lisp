@@ -32,12 +32,12 @@ impl Expr {
                             }};
                         }
                         macro_rules! declare_var {
-                            () => {
-                                let code = format!("\t{name} dq 0\n");
+                            ($name: expr) => {{
+                                let code = format!("\t{} dq 0\n", $name);
                                 if !ctx.variables.contains(&code) {
                                     ctx.variables.push(code);
                                 }
-                            };
+                            }};
                         }
                         match func_name.strip_prefix("_")? {
                             "+" => multi_args!("add"),
@@ -48,11 +48,8 @@ impl Expr {
                                 let Expr::Atom(Atom::Symbol(name)) = expr.get(1)? else {
                                     return None;
                                 };
+                                declare_var!(name);
                                 let value = expr.get(2)?.compile(ctx)?;
-                                let code = format!("\t{name} dq 0\n");
-                                if !ctx.variables.contains(&code) {
-                                    ctx.variables.push(code);
-                                }
                                 Some(format!("{value}\tmov [rel {name}], rax\n"))
                             }
                             "lambda" => {
@@ -64,10 +61,7 @@ impl Expr {
                                     let Expr::Atom(Atom::Symbol(name)) = arg else {
                                         return None;
                                     };
-                                    let code = format!("\t{name} dq 0\n");
-                                    if !ctx.variables.contains(&code) {
-                                        ctx.variables.push(code);
-                                    }
+                                    declare_var!(name);
                                     args.push(name);
                                 }
                                 let receiver = args
