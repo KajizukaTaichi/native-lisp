@@ -31,6 +31,14 @@ impl Expr {
                                 Some(result)
                             }};
                         }
+                        macro_rules! declare_var {
+                            () => {
+                                let code = format!("\t{name} dq 0\n");
+                                if !ctx.variables.contains(&code) {
+                                    ctx.variables.push(code);
+                                }
+                            };
+                        }
                         match func_name.strip_prefix("_")? {
                             "+" => multi_args!("add"),
                             "-" => multi_args!("sub"),
@@ -41,7 +49,10 @@ impl Expr {
                                     return None;
                                 };
                                 let value = expr.get(2)?.compile(ctx)?;
-                                ctx.variables.insert(format!("\t{name} dq 0\n"));
+                                let code = format!("\t{name} dq 0\n");
+                                if !ctx.variables.contains(&code) {
+                                    ctx.variables.push(code);
+                                }
                                 Some(format!("{value}\tmov [rel {name}], rax\n"))
                             }
                             "lambda" => {
@@ -53,7 +64,10 @@ impl Expr {
                                     let Expr::Atom(Atom::Symbol(name)) = arg else {
                                         return None;
                                     };
-                                    ctx.variables.insert(format!("\t{name} dq 0\n"));
+                                    let code = format!("\t{name} dq 0\n");
+                                    if !ctx.variables.contains(&code) {
+                                        ctx.variables.push(code);
+                                    }
                                     args.push(name);
                                 }
                                 let receiver = args
