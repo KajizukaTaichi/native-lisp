@@ -22,7 +22,7 @@ impl Expr {
                                 let mut result = expr.get(1)?.compile(ctx)?;
                                 for arg in expr.iter().skip(2) {
                                     let code = &format!(
-                                        "\tpush rax\n{}\tmov rdx, rax\n\tpop rax\n\t{} rax, rdx\n",
+                                        "\tpush rax\n{}\tmov rdx, rax\n\tpop rax\n\t{}\n",
                                         arg.compile(ctx)?,
                                         $order
                                     );
@@ -40,10 +40,13 @@ impl Expr {
                             }};
                         }
                         match func_name.strip_prefix("_")? {
-                            "+" => multi_args!("add"),
-                            "-" => multi_args!("sub"),
-                            "*" => multi_args!("imul"),
-                            "/" => multi_args!("idiv"),
+                            "+" => multi_args!("add rax, rdx"),
+                            "-" => multi_args!("sub rax, rdx"),
+                            "*" => multi_args!("imul rax, rdx"),
+                            "/" => multi_args!("mov rbx, rdx\n\txor rdx, rdx\n\tdiv rbx"),
+                            "%" => multi_args!(
+                                "mov rbx, rdx\n\txor rdx, rdx\n\tdiv rbx\n\tmov rax, rdx"
+                            ),
                             "var" => {
                                 let Expr::Atom(Atom::Symbol(name)) = expr.get(1)? else {
                                     return None;
