@@ -56,8 +56,6 @@ impl Expr {
                                     ctx.variables.insert(format!("\t{name} dq 0\n"));
                                     args.push(name);
                                 }
-                                let name = format!("lambda_{}", ctx.lambda_id);
-                                ctx.lambda_id += 1;
                                 let receiver = args
                                     .iter()
                                     .enumerate()
@@ -65,6 +63,8 @@ impl Expr {
                                     .collect::<Vec<_>>()
                                     .concat();
                                 let body = &expr.get(2)?.compile(ctx)?;
+                                let name = format!("lambda_{}", ctx.lambda_id);
+                                ctx.lambda_id += 1;
                                 ctx.functions
                                     .push(format!("{name}:\n{receiver}\n{body}\tret\n\n"));
                                 Some(format!("\tlea rax, [rel {name}]\n"))
