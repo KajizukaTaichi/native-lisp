@@ -22,7 +22,7 @@ impl Atom {
         if let Ok(n) = source.parse::<i64>() {
             Some(Atom::Integer(n))
         } else {
-            Some(Atom::Symbol("lisp_".to_string() + source))
+            Some(Atom::Symbol("_".to_string() + source))
         }
     }
 }
