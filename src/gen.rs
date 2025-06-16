@@ -17,9 +17,12 @@ impl Expr {
                         args
                     }};
                 }
-                macro_rules! create_stackframe {
-                    () => {
-                        format!("\tmov rax, [rel _ptr]\n\tadd rax, 512\n\tmov [rel _ptr], rax\n",)
+                macro_rules! stackframe {
+                    ($order: expr) => {
+                        format!(
+                            "\tmov r10, [rel _ptr]\n\t{} r10, 512\n\tmov [rel _ptr], r10\n",
+                            $order
+                        )
                     };
                 }
                 match expr.first()? {
@@ -89,19 +92,21 @@ impl Expr {
                                 Some(format!("\tlea rax, [rel {name}]\n"))
                             }
                             _ => Some(format!(
-                                "{}\tmov rax, [rel _ptr + {}]\n{}\tcall rax\n",
+                                "{}\tmov rax, [rel _ptr + {}]\n{}\tcall rax\n{}",
                                 pass_args!(),
                                 ctx.variables[func_name],
-                                create_stackframe!(),
+                                stackframe!("add"),
+                                stackframe!("sub"),
                             )),
                         }
                     }
                     func_obj => {
                         let code = func_obj.compile(ctx)?;
                         Some(format!(
-                            "{}{code}{}\tcall rax\n",
+                            "{}{code}{}\tcall rax\n{}",
                             pass_args!(),
-                            create_stackframe!(),
+                            stackframe!("add"),
+                            stackframe!("sub"),
                         ))
                     }
                 }
