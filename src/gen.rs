@@ -19,7 +19,7 @@ impl Expr {
                 }
                 macro_rules! create_stackframe {
                     () => {
-                        format!("\tmov rax, [rel ptr]\n\tadd rax, 512\n\tmov [rel ptr], rax\n",)
+                        format!("\tmov rax, [rel _ptr]\n\tadd rax, 512\n\tmov [rel _ptr], rax\n",)
                     };
                 }
                 match expr.first()? {
@@ -60,7 +60,7 @@ impl Expr {
                                 };
                                 let addr = declare_var!(name);
                                 let value = expr.get(2)?.compile(ctx)?;
-                                Some(format!("{value}\tmov [rel ptr + {addr}], rax\n"))
+                                Some(format!("{value}\tmov [rel _ptr + {addr}], rax\n"))
                             }
                             "lambda" => {
                                 let Expr::List(list) = expr.get(1)? else {
@@ -78,7 +78,7 @@ impl Expr {
                                     .iter()
                                     .enumerate()
                                     .map(|(id, addr)| {
-                                        format!("\tmov [rel ptr + {addr}], {}\n", ARGS[id])
+                                        format!("\tmov [rel _ptr + {addr}], {}\n", ARGS[id])
                                     })
                                     .collect::<String>();
                                 let body = &expr.get(2)?.compile(ctx)?;
@@ -89,7 +89,7 @@ impl Expr {
                                 Some(format!("\tlea rax, [rel {name}]\n"))
                             }
                             _ => Some(format!(
-                                "{}\tmov rax, [rel ptr + {}]\n{}\tcall rax\n",
+                                "{}\tmov rax, [rel _ptr + {}]\n{}\tcall rax\n",
                                 pass_args!(),
                                 ctx.variables[func_name],
                                 create_stackframe!(),
@@ -115,7 +115,9 @@ impl Atom {
     pub fn compile(&self, ctx: &mut Compiler) -> Option<String> {
         match self {
             Atom::Integer(number) => Some(format!("\tmov rax, {number}\n")),
-            Atom::Symbol(name) => Some(format!("\tmov rax, [rel ptr + {}]\n", ctx.variables[name])),
+            Atom::Symbol(name) => {
+                Some(format!("\tmov rax, [rel _ptr + {}]\n", ctx.variables[name]))
+            }
         }
     }
 }
