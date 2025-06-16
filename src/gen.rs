@@ -17,6 +17,11 @@ impl Expr {
                         args
                     }};
                 }
+                macro_rules! create_stackframe {
+                    () => {
+                        format!("\tadd [rel ptr], {}\n", ctx.variables.len())
+                    };
+                }
                 match expr.first()? {
                     Expr::Atom(Atom::Symbol(func_name)) => {
                         macro_rules! multi_args {
@@ -84,15 +89,20 @@ impl Expr {
                                 Some(format!("\tlea rax, [rel {name}]\n"))
                             }
                             _ => Some(format!(
-                                "{}\tmov rax, [rel ptr + {}]\n\tcall rax\n",
+                                "{}\tmov rax, [rel ptr + {}]\n{}\tcall rax\n",
                                 pass_args!(),
-                                ctx.variables[func_name]
+                                ctx.variables[func_name],
+                                create_stackframe!(),
                             )),
                         }
                     }
                     func_obj => {
                         let code = func_obj.compile(ctx)?;
-                        Some(format!("{}{code}\tcall rax\n", pass_args!()))
+                        Some(format!(
+                            "{}{code}{}\tcall rax\n",
+                            pass_args!(),
+                            create_stackframe!(),
+                        ))
                     }
                 }
             }
