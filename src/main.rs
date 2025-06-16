@@ -11,6 +11,7 @@ fn main() {
     println!("{}", output.unwrap());
 }
 
+#[derive(Clone)]
 struct Compiler {
     lambda_id: usize,
     heap_addr: usize,
@@ -19,17 +20,20 @@ struct Compiler {
 }
 
 impl Compiler {
+    fn new() -> Self {
+        Compiler {
+            lambda_id: 0,
+            heap_addr: 0,
+            functions: Vec::new(),
+            variables: IndexMap::new(),
+        }
+    }
     fn build(code: &str) -> Option<String> {
         let expr = tokenize(code)?
             .iter()
             .map(|code| Expr::parse(code))
             .collect::<Option<Vec<_>>>()?;
-        let mut compiler = Compiler {
-            lambda_id: 0,
-            heap_addr: 0,
-            functions: Vec::new(),
-            variables: IndexMap::new(),
-        };
+        let mut compiler = Compiler::new();
         let code = expr
             .iter()
             .map(|x| x.compile(&mut compiler))
