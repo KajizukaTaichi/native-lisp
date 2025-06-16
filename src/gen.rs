@@ -19,7 +19,10 @@ impl Expr {
                 }
                 macro_rules! create_stackframe {
                     () => {
-                        format!("\tadd [rel ptr], {}\n", ctx.variables.len())
+                        format!(
+                            "\tmov rax, [rel ptr]\n\tadd rax, {}\tmov [rel ptr], rax\n",
+                            ctx.variables.len()
+                        )
                     };
                 }
                 match expr.first()? {
