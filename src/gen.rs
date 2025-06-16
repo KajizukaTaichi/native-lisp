@@ -20,7 +20,7 @@ impl Expr {
                 macro_rules! stackframe {
                     ($order: expr) => {
                         format!(
-                            "\tmov r10, [rel _ptr]\n\t{} r10, 512\n\tmov [rel _ptr], r10\n",
+                            "\tmov r10, [rel _ptr]\t; Stack frame\n\t{} r10, 512\n\tmov [rel _ptr], r10\n",
                             $order
                         )
                     };
@@ -120,9 +120,10 @@ impl Atom {
     pub fn compile(&self, ctx: &mut Compiler) -> Option<String> {
         match self {
             Atom::Integer(number) => Some(format!("\tmov rax, {number}\n")),
-            Atom::Symbol(name) => {
-                Some(format!("\tmov rax, [rel _ptr + {}]\n", ctx.variables[name]))
-            }
+            Atom::Symbol(name) => Some(format!(
+                "\tmov rax, [rel _ptr + {}]\t; Load `{name}`\n",
+                ctx.variables[name]
+            )),
         }
     }
 }
