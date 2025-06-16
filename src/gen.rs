@@ -66,6 +66,8 @@ impl Expr {
                                 Some(format!("{value}\tmov [rel _ptr + {addr}], rax\n"))
                             }
                             "lambda" => {
+                                let old_env = ctx.clone();
+                                *ctx = Compiler::new();
                                 let Expr::List(list) = expr.get(1)? else {
                                     return None;
                                 };
@@ -85,6 +87,8 @@ impl Expr {
                                     })
                                     .collect::<String>();
                                 let body = &expr.get(2)?.compile(ctx)?;
+
+                                *ctx = old_env;
                                 let name = format!("lambda_{}", ctx.lambda_id);
                                 ctx.lambda_id += 1;
                                 ctx.functions
