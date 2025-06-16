@@ -84,8 +84,9 @@ impl Expr {
                                 Some(format!("\tlea rax, [rel {name}]\n"))
                             }
                             _ => Some(format!(
-                                "{}\tmov rax, [rel {func_name}]\n\tcall rax\n",
-                                pass_args!()
+                                "{}\tmov rax, [rel heap + {}]\n\tcall rax\n",
+                                pass_args!(),
+                                ctx.variables[func_name]
                             )),
                         }
                     }
