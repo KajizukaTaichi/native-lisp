@@ -35,7 +35,7 @@ impl Compiler {
             .map(|x| x.compile(&mut compiler))
             .collect::<Option<Vec<_>>>()?
             .concat();
-        let bss = "section .bss\n\theap:\tresb 65536\n";
+        let bss = "section .bss\n\theap: resb 65536\n";
         let top = "section .text\n\talign 16\n\tglobal _start\n\n_start:\n";
         let exit = "\tmov rdi, rax\n\tmov rax, 0x2000001\n\tsyscall\n\n";
         let fnc = compiler.functions.into_iter().collect::<String>();
