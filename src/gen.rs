@@ -20,7 +20,7 @@ impl Expr {
                 macro_rules! stackframe {
                     ($order: expr) => {
                         format!(
-                            "\tmov r10, [rel _ptr]\t; Stack frame\n\t{} r10, 512\n\tmov [rel _ptr], r10\n",
+                            "\n\tmov r10, [rel _ptr]\t; Stack frame\n\t{} r10, 512\n\tmov [rel _ptr], r10\n\n",
                             $order
                         )
                     };
