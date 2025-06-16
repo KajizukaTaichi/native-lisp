@@ -33,11 +33,9 @@ impl Compiler {
             .concat();
         let bss = "section .bss\n\theap_start:\tresb 65536\n\theap_ptr:\tresq 1\n";
         let top = "section .text\n\talign 16\n\tglobal _start\n\n_start:\n";
-        let exit = "\tmov rdi, rax\n\tmov rax, 0x2000001\n\tsyscall\n";
-        let vars = compiler.variables.into_iter().collect::<String>();
+        let exit = "\tmov rdi, rax\n\tmov rax, 0x2000001\n\tsyscall\n\n";
         let fnc = compiler.functions.into_iter().collect::<String>();
-        let vars = format!("\nsection .data\n{vars}");
-        Some(format!("{bss}{top}{code}{exit}{fnc}{vars}"))
+        Some(format!("{bss}{top}{code}{exit}{fnc}"))
     }
 }
 
