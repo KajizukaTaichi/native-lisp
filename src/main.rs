@@ -35,11 +35,11 @@ impl Compiler {
             .map(|x| x.compile(&mut compiler))
             .collect::<Option<Vec<_>>>()?
             .concat();
-        let bss = "section .bss\n\theap: resb 65536\n";
+        let bss = "section .bss\n\theap: resb 65536\n\tptr: resq 1\n";
         let top = "section .text\n\talign 16\n\tglobal _start\n\n_start:\n";
         let exit = "\tmov rdi, rax\n\tmov rax, 0x2000001\n\tsyscall\n\n";
         let fnc = compiler.functions.into_iter().collect::<String>();
-        Some(format!("{bss}{top}{code}{exit}{fnc}"))
+        Some(format!("{bss}{top}mov [heap_ptr], rax\n{code}{exit}{fnc}"))
     }
 }
 
