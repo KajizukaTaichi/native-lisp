@@ -101,10 +101,10 @@ impl Expr {
 }
 
 impl Atom {
-    pub fn compile(&self, _ctx: &mut Compiler) -> Option<String> {
+    pub fn compile(&self, ctx: &mut Compiler) -> Option<String> {
         match self {
             Atom::Integer(number) => Some(format!("\tmov rax, {number}\n")),
-            Atom::Symbol(name) => Some(format!("\tmov rax, [rel {name}]\n")),
+            Atom::Symbol(name) => Some(format!("\tmov rax, [heap + {}]\n", ctx.variables[name])),
         }
     }
 }
