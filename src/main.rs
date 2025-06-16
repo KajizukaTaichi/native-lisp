@@ -31,11 +31,13 @@ impl Compiler {
             .map(|x| x.compile(&mut compiler))
             .collect::<Option<Vec<_>>>()?
             .concat();
+        let bss = "section .bss\n\theap_start:\tresb 65536\n\theap_ptr:\tresq 1\n";
         let top = "section .text\n\talign 16\n\tglobal _start\n\n_start:\n";
         let exit = "\tmov rdi, rax\n\tmov rax, 0x2000001\n\tsyscall\n";
         let vars = compiler.variables.into_iter().collect::<String>();
         let fnc = compiler.functions.into_iter().collect::<String>();
-        Some(format!("{top}{code}\n{exit}\n{fnc}\nsection .data\n{vars}"))
+        let vars = format!("\nsection .data\n{vars}");
+        Some(format!("{bss}{top}{code}{exit}{fnc}{vars}"))
     }
 }
 
