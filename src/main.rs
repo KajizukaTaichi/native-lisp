@@ -39,7 +39,7 @@ impl Compiler {
         let top = "section .text\n\talign 16\n\tglobal _start\n\n_start:\n";
         let exit = "\tmov rdi, rax\n\tmov rax, 0x2000001\n\tsyscall\n\n";
         let fnc = compiler.functions.into_iter().collect::<String>();
-        Some(format!("{bss}{top}mov [heap_ptr], rax\n{code}{exit}{fnc}"))
+        Some(format!("{bss}{top}mov [rel ptr], rax\n{code}{exit}{fnc}"))
     }
 }
 
