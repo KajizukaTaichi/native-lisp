@@ -55,7 +55,7 @@ impl Expr {
                                 };
                                 let addr = declare_var!(name);
                                 let value = expr.get(2)?.compile(ctx)?;
-                                Some(format!("{value}\tmov [rel heap + {addr}], rax\n"))
+                                Some(format!("{value}\tmov [rel ptr + {addr}], rax\n"))
                             }
                             "lambda" => {
                                 let Expr::List(list) = expr.get(1)? else {
@@ -73,7 +73,7 @@ impl Expr {
                                     .iter()
                                     .enumerate()
                                     .map(|(id, addr)| {
-                                        format!("\tmov [rel heap + {addr}], {}\n", ARGS[id])
+                                        format!("\tmov [rel ptr + {addr}], {}\n", ARGS[id])
                                     })
                                     .collect::<String>();
                                 let body = &expr.get(2)?.compile(ctx)?;
@@ -84,7 +84,7 @@ impl Expr {
                                 Some(format!("\tlea rax, [rel {name}]\n"))
                             }
                             _ => Some(format!(
-                                "{}\tmov rax, [rel heap + {}]\n\tcall rax\n",
+                                "{}\tmov rax, [rel ptr + {}]\n\tcall rax\n",
                                 pass_args!(),
                                 ctx.variables[func_name]
                             )),
