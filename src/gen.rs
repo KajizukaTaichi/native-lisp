@@ -19,10 +19,7 @@ impl Expr {
                 }
                 macro_rules! create_stackframe {
                     () => {
-                        format!(
-                            "\tmov rax, [rel ptr]\n\tadd rax, {}\n\tmov [rel ptr], rax\n",
-                            ctx.variables.len()
-                        )
+                        format!("\tmov rax, [rel ptr]\n\tadd rax, 512\n\tmov [rel ptr], rax\n",)
                     };
                 }
                 match expr.first()? {
@@ -118,9 +115,7 @@ impl Atom {
     pub fn compile(&self, ctx: &mut Compiler) -> Option<String> {
         match self {
             Atom::Integer(number) => Some(format!("\tmov rax, {number}\n")),
-            Atom::Symbol(name) => {
-                Some(format!("\tmov rax, [rel heap + {}]\n", ctx.variables[name]))
-            }
+            Atom::Symbol(name) => Some(format!("\tmov rax, [rel ptr + {}]\n", ctx.variables[name])),
         }
     }
 }
