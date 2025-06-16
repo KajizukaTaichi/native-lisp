@@ -1,5 +1,7 @@
 use crate::*;
 
+const ARGS: [&str; 6] = ["rdi", "rsi", "rdx", "rcx", "r8", "r9"];
+
 impl Expr {
     pub fn compile(&self, ctx: &mut Compiler) -> Option<String> {
         match self {
@@ -9,7 +11,7 @@ impl Expr {
                         let mut args = String::new();
                         for (id, arg) in expr.iter().skip(1).enumerate() {
                             let code = arg.compile(ctx)?;
-                            let code = &format!("{code}\tmov r{}, rax\n", id + 8);
+                            let code = &format!("{code}\tmov {}, rax\n", ARGS[id]);
                             args.push_str(code);
                         }
                         args
@@ -33,10 +35,10 @@ impl Expr {
                         }
                         macro_rules! declare_var {
                             ($name: expr) => {{
-                                let code = format!("\t{} dq 0\n", $name);
-                                if !ctx.variables.contains(&code) {
-                                    ctx.variables.push(code);
-                                }
+                                let addr = ctx.heap_addr;
+                                ctx.variables.insert($name.to_string(), addr);
+                                ctx.heap_addr += 1;
+                                addr
                             }};
                         }
                         match func_name.strip_prefix("_")? {
@@ -51,9 +53,9 @@ impl Expr {
                                 let Expr::Atom(Atom::Symbol(name)) = expr.get(1)? else {
                                     return None;
                                 };
-                                declare_var!(name);
+                                let addr = declare_var!(name);
                                 let value = expr.get(2)?.compile(ctx)?;
-                                Some(format!("{value}\tmov [rel {name}], rax\n"))
+                                Some(format!("{value}\tmov [heap + {addr}], rax\n"))
                             }
                             "lambda" => {
                                 let Expr::List(list) = expr.get(1)? else {
@@ -64,15 +66,16 @@ impl Expr {
                                     let Expr::Atom(Atom::Symbol(name)) = arg else {
                                         return None;
                                     };
-                                    declare_var!(name);
-                                    args.push(name);
+                                    let addr = declare_var!(name);
+                                    args.push(addr);
                                 }
                                 let receiver = args
                                     .iter()
                                     .enumerate()
-                                    .map(|(id, name)| format!("\tmov [rel {name}], r{}\n", id + 8))
-                                    .collect::<Vec<_>>()
-                                    .concat();
+                                    .map(|(id, addr)| {
+                                        format!("\tmov [heap + {addr}], {}\n", ARGS[id])
+                                    })
+                                    .collect::<String>();
                                 let body = &expr.get(2)?.compile(ctx)?;
                                 let name = format!("lambda_{}", ctx.lambda_id);
                                 ctx.lambda_id += 1;
