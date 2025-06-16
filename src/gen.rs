@@ -55,7 +55,7 @@ impl Expr {
                                 };
                                 let addr = declare_var!(name);
                                 let value = expr.get(2)?.compile(ctx)?;
-                                Some(format!("{value}\tmov [heap + {addr}], rax\n"))
+                                Some(format!("{value}\tmov [rel heap + {addr}], rax\n"))
                             }
                             "lambda" => {
                                 let Expr::List(list) = expr.get(1)? else {
@@ -73,7 +73,7 @@ impl Expr {
                                     .iter()
                                     .enumerate()
                                     .map(|(id, addr)| {
-                                        format!("\tmov [heap + {addr}], {}\n", ARGS[id])
+                                        format!("\tmov [rel heap + {addr}], {}\n", ARGS[id])
                                     })
                                     .collect::<String>();
                                 let body = &expr.get(2)?.compile(ctx)?;
@@ -104,7 +104,9 @@ impl Atom {
     pub fn compile(&self, ctx: &mut Compiler) -> Option<String> {
         match self {
             Atom::Integer(number) => Some(format!("\tmov rax, {number}\n")),
-            Atom::Symbol(name) => Some(format!("\tmov rax, [heap + {}]\n", ctx.variables[name])),
+            Atom::Symbol(name) => {
+                Some(format!("\tmov rax, [rel heap + {}]\n", ctx.variables[name]))
+            }
         }
     }
 }
