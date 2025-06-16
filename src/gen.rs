@@ -37,7 +37,7 @@ impl Expr {
                             ($name: expr) => {{
                                 let addr = ctx.heap_addr;
                                 ctx.variables.insert($name.to_string(), addr);
-                                ctx.heap_addr += 1;
+                                ctx.heap_addr += 8;
                                 addr
                             }};
                         }
