@@ -20,7 +20,7 @@ impl Expr {
                 macro_rules! create_stackframe {
                     () => {
                         format!(
-                            "\tmov rax, [rel ptr]\n\tadd rax, {}\tmov [rel ptr], rax\n",
+                            "\tmov rax, [rel ptr]\n\tadd rax, {}\n\tmov [rel ptr], rax\n",
                             ctx.variables.len()
                         )
                     };
