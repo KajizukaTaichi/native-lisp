@@ -25,6 +25,17 @@ impl Expr {
                         )
                     };
                 }
+                macro_rules! call_func {
+                    ($func_obj: expr) => {
+                        Some(format!(
+                            "{}{}\tmov r11, rax\n{}\tcall r11\n{}",
+                            pass_args!(),
+                            $func_obj.compile(ctx)?,
+                            stackframe!("add"),
+                            stackframe!("sub"),
+                        ))
+                    };
+                }
                 match expr.first()? {
                     Expr::Atom(Atom::Symbol(func_name)) => {
                         macro_rules! multi_args {
@@ -91,24 +102,10 @@ impl Expr {
                                     .push(format!("{name}:\n{receiver}\n{body}\tret\n\n"));
                                 Some(format!("\tlea rax, [rel {name}]\n"))
                             }
-                            _ => Some(format!(
-                                "{}\tmov rax, [rel _ptr + {}]\n{}\tcall rax\n{}",
-                                pass_args!(),
-                                ctx.variables[func_name],
-                                stackframe!("add"),
-                                stackframe!("sub"),
-                            )),
+                            _ => call_func!(Expr::Atom(Atom::Symbol(func_name.to_owned()))),
                         }
                     }
-                    func_obj => {
-                        let code = func_obj.compile(ctx)?;
-                        Some(format!(
-                            "{}{code}{}\tcall rax\n{}",
-                            pass_args!(),
-                            stackframe!("add"),
-                            stackframe!("sub"),
-                        ))
-                    }
+                    func_obj => call_func!(func_obj),
                 }
             }
             Expr::Atom(atom) => atom.compile(ctx),
